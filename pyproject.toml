@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "bukichi-bot"
+version = "0.1.0"
+description = "Discord bukichi bot"
+authors = ["otajisan <mtaji@morningcode.io>"]
+readme = "README.md"
+packages = [{include = "bukichi_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+discord-py = {extras = ["voice"], version = "^2.2.2"}
+pillow = "^9.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
