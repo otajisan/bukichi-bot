@@ -50,7 +50,8 @@ class BukichiBotClient(discord.Client):
         if guild.system_channel is not None:
             # to_send = f'Welcome {member.mention} to {guild.name}!'
             # await guild.system_channel.send(to_send)
-            name = member.name
+            name = member.display_name
+            print(f'member: {member}')
             image_creator = ImageCreator()
             image = image_creator.greeting_by_name(name)
             if image != '':
