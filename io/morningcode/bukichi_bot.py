@@ -3,9 +3,14 @@ import textwrap
 
 import discord
 
+from discord.ext import tasks
+from datetime import datetime as dt
+
 from components.image_creator import ImageCreator
+from components.stage_image_creator import StageImageCreator
 
 DISCORD_APP_TOKEN = os.getenv('DISCORD_APP_TOKEN')
+BOT_CHANNEL_ID = os.getenv('BOT_CHANNEL_ID')
 
 
 class BukichiBotClient(discord.Client):
@@ -13,7 +18,9 @@ class BukichiBotClient(discord.Client):
     DEBUG = False
 
     async def on_ready(self):
-        print(f'Logged on as {self.user}!')
+        print(f'Logged on as {self.user}! bot_channel: {BOT_CHANNEL_ID}')
+        self.bot_channel = self.get_channel(int(BOT_CHANNEL_ID))
+        self.batch_send_stage_image.start()
 
     async def on_message(self, message):
         if message.author.bot:
@@ -65,6 +72,21 @@ class BukichiBotClient(discord.Client):
                 {name} さん、はじめましてでし！
                 まずは #ルール をよんでね。
                 ''')
+
+    @tasks.loop(seconds=60)
+    async def batch_send_stage_image(self):
+
+        current_time = dt.now().strftime('%H:%M')
+        print(f'check time. current_time: {current_time}')
+        if current_time == '09:00' or current_time == '17:00' or current_time == '19:48':
+            print('start create stage image.')
+            image_creator = StageImageCreator()
+            image = image_creator.run()
+            print(f'created image: {image}')
+
+            await self.bot_channel.send(file=discord.File(image))
+
+            os.remove(image)
 
 
 intents = discord.Intents.default()
