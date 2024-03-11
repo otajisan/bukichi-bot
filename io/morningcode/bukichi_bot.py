@@ -78,7 +78,7 @@ class BukichiBotClient(discord.Client):
 
         current_time = dt.now().strftime('%H:%M')
         print(f'check time. current_time: {current_time}')
-        if current_time == '09:00' or current_time == '17:00' or current_time == '19:48':
+        if current_time == '09:00' or current_time == '17:00':
             print('start create stage image.')
             image_creator = StageImageCreator()
             image = image_creator.run()
