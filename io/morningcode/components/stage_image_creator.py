@@ -55,8 +55,7 @@ class StageImageCreator:
 
         return filtered
 
-    def load_font(self):
-        font_size = 32
+    def load_font(self, font_size=50):
         return ImageFont.truetype(self.JAPANESE_FONT_PATH, font_size)
 
     @staticmethod
@@ -70,8 +69,8 @@ class StageImageCreator:
 
     @staticmethod
     def resize_image(img):
-        size_delta = 0.85
-        return img.resize((round(img.width // size_delta), round(img.height // size_delta)))
+        size_delta = 1.5
+        return img.resize((round(img.width * size_delta), round(img.height * size_delta)))
 
     def download_stage_image(self, save_to, image_url):
         response = requests.get(image_url, stream=True)
@@ -81,24 +80,27 @@ class StageImageCreator:
         return self.resize_image(Image.open(save_to))
 
     def append_stage_image(self, background_img, draw, pos_x, pos_y, data):
-        if data['stages'] is None:
+        if data['stages'] is None or data['rule'] is None:
             return
 
         text_color = (255, 255, 255)
+
+        rule_name = data['rule']['name']
 
         # add event time
         start_at = dt.strftime(dt.strptime(data['start_time'], '%Y-%m-%dT%H:%M:%S+09:00'), '%H')
         end_at = dt.strftime(dt.strptime(data['end_time'], '%Y-%m-%dT%H:%M:%S+09:00'), '%H')
 
-        draw.text((pos_x + 8, pos_y - 50), f'{start_at}-{end_at}', fill=text_color,
+        draw.text((pos_x + 8, pos_y - 60), f'{rule_name}({start_at}-{end_at})', fill=text_color,
                   font=self.FONT_JAPANESE)
 
         for number, stage in enumerate(data['stages']):
-            delta_y = 245 * number
+            delta_y = 310 * number
             stage_name = stage['name']
+
             save_to = f"{stage_name}.png"
 
-            stage_img = self.download_stage_image(f"{stage['name']}.png", stage['image'])
+            stage_img = self.download_stage_image(f"{stage_name}.png", stage['image'])
 
             # add stage image
             background_img.paste(stage_img, (pos_x, pos_y + delta_y))
@@ -109,45 +111,42 @@ class StageImageCreator:
                 stage_name_kana = ''
             else:
                 stage_name_kana = ''.join(stage_name_kana).replace('ー', '-')
-            draw.text((pos_x + 8, pos_y + 190 + delta_y), stage_name_kana, fill=text_color,
+            draw.text((pos_x + 16, pos_y + 232 + delta_y), stage_name_kana, fill=text_color,
                       font=self.FONT_JAPANESE)
 
-            # delete image file
-            os.remove(f"{stage['name']}.png")
+    # def append_rule_name(self, draw, pos_x, pos_y, data):
+    #    if data is None or data['rule'] is None:
+    #        return
 
-    def append_rule_name(self, draw, pos_x, pos_y, data):
-        if data is None or data['rule'] is None:
-            return
+    #    text_color = (255, 255, 255)
 
-        text_color = (255, 255, 255)
-
-        rule = data['rule']['name']
-        print(rule)
-        draw.text((pos_x + 8, pos_y - 100), rule, fill=text_color, font=self.FONT_JAPANESE)
+    #    rule = data['rule']['name']
+    #    print(rule)
+    #    draw.text((pos_x + 8, pos_y - 100), rule, fill=text_color, font=self.FONT_JAPANESE)
 
     def make_stages_image(self, filtered):
         background_img = self.get_background_img()
         draw = ImageDraw.Draw(background_img)
 
-        pos_x = 50
+        pos_x = 100
         pos_y = 0
 
         cursor = ''
         for k, v in filtered.items():
-            print(k)
+            # print(k)
             if k != cursor:
-                print(f'processing stage info. current rule: {k}')
+                print(f'processing stage info. current mode: {k}')
                 cursor = k
-                pos_x = 50
+                pos_x = 100
                 # initial position
                 if pos_y == 0:
-                    pos_y = 300
+                    pos_y = 200
                 else:
-                    pos_y += 700
+                    pos_y += 780
 
             for d in v:
-                self.append_rule_name(background_img, draw, pos_x, pos_y, d)
+                # self.append_rule_name(background_img, draw, pos_x, pos_y, d)
                 self.append_stage_image(background_img, draw, pos_x, pos_y, d)
-                pos_x += 480
+                pos_x += 730
 
         return background_img
