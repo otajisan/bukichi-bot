@@ -116,12 +116,12 @@ class StageImageCreator:
             os.remove(f"{stage['name']}.png")
 
     def append_rule_name(self, draw, pos_x, pos_y, data):
-        if len(data) < 1 or data is None or data[0]['rule'] is None:
+        if data is None or data['rule'] is None:
             return
 
         text_color = (255, 255, 255)
 
-        rule = data[0]['rule']['name']
+        rule = data['rule']['name']
         print(rule)
         draw.text((pos_x + 8, pos_y - 100), rule, fill=text_color, font=self.FONT_JAPANESE)
 
@@ -144,9 +144,9 @@ class StageImageCreator:
                     pos_y = 300
                 else:
                     pos_y += 700
-                self.append_rule_name(draw, pos_x, pos_y, v)
 
             for d in v:
+                self.append_rule_name(background_img, draw, pos_x, pos_y, d)
                 self.append_stage_image(background_img, draw, pos_x, pos_y, d)
                 pos_x += 480
 
