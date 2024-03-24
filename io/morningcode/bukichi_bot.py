@@ -8,13 +8,13 @@ from datetime import datetime as dt
 
 from components.image_creator import ImageCreator
 from components.stage_image_creator import StageImageCreator
+from components.fest_image_creator import FestStageImageCreator
 
 DISCORD_APP_TOKEN = os.getenv('DISCORD_APP_TOKEN')
 BOT_CHANNEL_ID = os.getenv('BOT_CHANNEL_ID')
 
 
 class BukichiBotClient(discord.Client):
-
     DEBUG = False
 
     async def on_ready(self):
@@ -77,16 +77,27 @@ class BukichiBotClient(discord.Client):
     async def batch_send_stage_image(self):
 
         current_time = dt.now().strftime('%H:%M')
-        #print(f'check time. current_time: {current_time}')
+        # print(f'check time. current_time: {current_time}')
         if current_time == '09:00' or current_time == '17:00':
             print('start create stage image.')
             image_creator = StageImageCreator()
             image = image_creator.run()
             print(f'created image: {image}')
 
-            await self.bot_channel.send(file=discord.File(image))
+            if image is not None:
+                await self.bot_channel.send(file=discord.File(image))
+                os.remove(image)
 
-            os.remove(image)
+            print('start create fest stage image.')
+            fest_image_creator = FestStageImageCreator()
+            fest_image = fest_image_creator.run()
+            print(f'created fest image: {fest_image}')
+
+            if fest_image is not None:
+                await self.bot_channel.send(file=discord.File(fest_image))
+                os.remove(fest_image)
+
+            print('finish send stage image.')
 
 
 intents = discord.Intents.default()

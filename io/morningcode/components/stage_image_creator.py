@@ -25,6 +25,10 @@ class StageImageCreator:
         print('creating image...')
         created_img = self.make_stages_image(filtered)
 
+        if created_img is None:
+            print('no image created. maybe all fest.')
+            return None
+
         print('saving image...')
         current_time = dt.now().strftime('%Y%m%d%H')
         save_to = f'{current_time}.png'
@@ -59,8 +63,13 @@ class StageImageCreator:
         return ImageFont.truetype(self.JAPANESE_FONT_PATH, font_size)
 
     @staticmethod
-    def get_background_img():
-        background_img = 'io/morningcode/assets/img/discord_bg.png'
+    def get_background_img(suffix=''):
+        if suffix == '':
+            image_name = 'discord_bg.png'
+        else:
+            image_name = f'discord_bg_{suffix}.png'
+
+        background_img = f'io/morningcode/assets/img/{image_name}'
         try:
             return Image.open(background_img)
         except FileNotFoundError:
@@ -68,16 +77,15 @@ class StageImageCreator:
             return None
 
     @staticmethod
-    def resize_image(img):
-        size_delta = 1.5
+    def resize_image(img, size_delta=1.5):
         return img.resize((round(img.width * size_delta), round(img.height * size_delta)))
 
-    def download_stage_image(self, save_to, image_url):
+    def download_stage_image(self, save_to, image_url, size_delta=1.5):
         response = requests.get(image_url, stream=True)
         with open(save_to, 'wb') as f:
             f.write(response.content)
 
-        return self.resize_image(Image.open(save_to))
+        return self.resize_image(Image.open(save_to), size_delta)
 
     def append_stage_image(self, background_img, draw, pos_x, pos_y, data):
         if data['stages'] is None or data['rule'] is None:
@@ -114,6 +122,14 @@ class StageImageCreator:
             draw.text((pos_x + 16, pos_y + 232 + delta_y), stage_name_kana, fill=text_color,
                       font=self.FONT_JAPANESE)
 
+    @staticmethod
+    def check_if_is_all_fest(filtered):
+        for k, v in filtered.items():
+            for d in v:
+                if d['is_fest'] is False:
+                    return False
+        return True
+
     # def append_rule_name(self, draw, pos_x, pos_y, data):
     #    if data is None or data['rule'] is None:
     #        return
@@ -125,6 +141,9 @@ class StageImageCreator:
     #    draw.text((pos_x + 8, pos_y - 100), rule, fill=text_color, font=self.FONT_JAPANESE)
 
     def make_stages_image(self, filtered):
+        if self.check_if_is_all_fest(filtered):
+            return None
+
         background_img = self.get_background_img()
         draw = ImageDraw.Draw(background_img)
 
