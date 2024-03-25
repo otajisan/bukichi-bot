@@ -61,7 +61,18 @@ class FestStageImageCreator(StageImageCreator):
                   font=self.FONT_JAPANESE)
         return
 
+    @staticmethod
+    def check_if_is_fest_not_exists(filtered):
+        for k, v in filtered.items():
+            for d in v:
+                if d['is_fest'] is True:
+                    return False
+        return True
+
     def make_stages_image(self, filtered):
+        if self.check_if_is_fest_not_exists(filtered):
+            return None
+
         background_img = self.get_background_img(suffix='fest')
         draw = ImageDraw.Draw(background_img)
 
