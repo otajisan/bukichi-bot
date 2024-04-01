@@ -10,10 +10,15 @@ class StageImageCreator:
     ENGLISH_FONT_PATH = os.getenv('ENGLISH_FONT_PATH')
     JAPANESE_FONT_PATH = os.getenv('JAPANESE_FONT_PATH')
 
+    FONT_JAPANESE = None
+    FONT_ENGLISH = None
+
     PATTERN_KATAKANA = re.compile('[ア-ンー]+')
+    PATTERN_KANA = re.compile('[ア-ンあ-んー・]+')
 
     def __init__(self):
-        self.FONT_JAPANESE = self.load_font()
+        self.FONT_JAPANESE = self.load_font(self.JAPANESE_FONT_PATH)
+        self.FONT_ENGLISH = self.load_font(self.ENGLISH_FONT_PATH)
 
     def run(self):
         print('fetching stages...')
@@ -59,8 +64,9 @@ class StageImageCreator:
 
         return filtered
 
-    def load_font(self, font_size=50):
-        return ImageFont.truetype(self.JAPANESE_FONT_PATH, font_size)
+    def load_font(self, path=JAPANESE_FONT_PATH, font_size=50):
+        print(f'loading font. path: {path} font_size: {font_size}')
+        return ImageFont.truetype(path, font_size)
 
     @staticmethod
     def get_background_img(suffix=''):
@@ -77,15 +83,25 @@ class StageImageCreator:
             return None
 
     @staticmethod
-    def resize_image(img, size_delta=1.5):
-        return img.resize((round(img.width * size_delta), round(img.height * size_delta)))
+    def resize_image(img, size_delta=1.5, fixed_width=None, fixed_height=None):
+        if fixed_width is None:
+            width = round(img.width * size_delta)
+        else:
+            width = fixed_width
 
-    def download_stage_image(self, save_to, image_url, size_delta=1.5):
+        if fixed_height is None:
+            height = round(img.height * size_delta)
+        else:
+            height = fixed_height
+
+        return img.resize((width, height))
+
+    def download_stage_image(self, save_to, image_url, size_delta=1.5, fixed_width=None, fixed_height=None):
         response = requests.get(image_url, stream=True)
         with open(save_to, 'wb') as f:
             f.write(response.content)
 
-        return self.resize_image(Image.open(save_to), size_delta)
+        return self.resize_image(Image.open(save_to), size_delta, fixed_width, fixed_height)
 
     def append_stage_image(self, background_img, draw, pos_x, pos_y, data):
         if data['stages'] is None or data['rule'] is None:
