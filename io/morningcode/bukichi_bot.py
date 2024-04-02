@@ -106,7 +106,7 @@ class BukichiBotClient(discord.Client):
     async def batch_send_salmon_run_stage_image(self):
         current_time = dt.now().strftime('%H:%M')
         # print(f'check time. current_time: {current_time}')
-        if current_time == '09:00' or current_time == '17:00' or current_time == '01:00':
+        if current_time == '09:01' or current_time == '17:01' or current_time == '01:01':
             print('start fetch salmon run stage info.')
             api_client = Splatoon3ApiClient()
             stages = api_client.fetch_salmon_run_stages()
